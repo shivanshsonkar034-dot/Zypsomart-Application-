@@ -1,199 +1,136 @@
-import { db } from './firebase.js';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | ZYPSO Mart</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { padding: 15px; max-width: 900px; margin: 0 auto; background: #f1f5f9; min-height: 100vh; }
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 12px; }
+        .stat-box { background: var(--primary); color: white; padding: 15px; border-radius: 12px; text-align: center; }
+        input, select { padding: 8px; margin-bottom: 10px; width: 100%; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .village-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+        @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body onload="initAdmin()">
+    <div class="admin-container">
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Admin Dashboard</h2>
+            <a href="index.html" style="color:var(--danger); text-decoration:none; font-weight:bold;">Exit Admin</a>
+        </div>
 
-let allOrders = [];
-let allProducts = [];
+        <div class="grid-2" style="margin-bottom:20px;">
+            <div class="stat-box"><h3>Total Revenue</h3><h2 id="total-rev-val">₹0</h2><small>(Delivered Only)</small></div>
+            <div class="stat-box" style="background:var(--dark)"><h3>Products Sold</h3><h2 id="total-sold-val">0</h2></div>
+        </div>
 
-window.initAdmin = () => {
-    // 1. Shop Settings Listener
-    onSnapshot(doc(db, "shopControl", "status"), (docSnap) => {
-        if(docSnap.exists()) {
-            const d = docSnap.data();
-            document.getElementById('shop-toggle').checked = d.isClosed;
-            document.getElementById('status-label').innerText = d.isClosed ? "CLOSED" : "OPEN";
-            document.getElementById('delivery-charge-input').value = d.deliveryCharge || 0;
-            document.getElementById('support-number-input').value = d.supportNumber || "8090315246";
-        }
-    });
+        <div class="grid-2">
+            <div class="card">
+                <h3>Festival Banner & Offer</h3>
+                <label>Banner Image URL:</label>
+                <input type="text" id="banner-url-input" placeholder="https://example.com/image.jpg">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <input type="checkbox" id="banner-active" style="width:auto; margin:0;"> <span>Show Banner to Users</span>
+                </div>
+                <button onclick="updateBannerSettings()" class="btn-primary" style="width:100%">Update Banner</button>
+            </div>
 
-    // 2. Banner Settings Listener
-    onSnapshot(doc(db, "shopControl", "banner"), (docSnap) => {
-        if(docSnap.exists()){
-            const b = docSnap.data();
-            document.getElementById('banner-url-input').value = b.url || "";
-            document.getElementById('banner-active').checked = b.active || false;
-        }
-    });
+            <div class="card">
+                <h3>Village & Delivery Charges</h3>
+                <input type="text" id="village-name-input" placeholder="Village Name">
+                <input type="number" id="village-charge-input" placeholder="Delivery Charge (₹)">
+                <button onclick="addVillage()" class="btn-primary" style="width:100%">Add Village</button>
+                <div id="admin-village-list" style="margin-top:15px; max-height:150px; overflow-y:auto; border-top:1px solid #eee;">
+                    </div>
+            </div>
+        </div>
 
-    // 3. Villages Listener
-    onSnapshot(collection(db, "villages"), (snap) => {
-        const villages = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        document.getElementById('admin-village-list').innerHTML = villages.map(v => `
-            <div class="village-item">
-                <span><b>${v.name}</b> (₹${v.charge})</span>
-                <button onclick="deleteVillage('${v.id}')" style="color:red; border:none; background:none; cursor:pointer;">Delete</button>
-            </div>`).join('');
-    });
+        <div class="card">
+            <h3>Date Range Filter</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="date" id="filter-start">
+                <input type="date" id="filter-end">
+                <button onclick="applyFilters()" class="btn-primary" style="white-space:nowrap;">Filter Revenue</button>
+            </div>
+        </div>
 
-    // 4. Orders Real-time Listener
-    onSnapshot(query(collection(db, "orders"), orderBy("createdAt", "desc")), (snap) => {
-        allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderOrders();
-    });
+        <div class="grid-2">
+            <div class="card">
+                <h3>Add New Product</h3>
+                <input type="text" id="p-name" placeholder="Product Name">
+                <input type="number" id="p-price" placeholder="Price (₹)">
+                <select id="p-unit">
+                    <option value="piece">per Piece</option>
+                    <option value="kg">per kg</option>
+                    <option value="gram">per gram</option>
+                    <option value="bunch">per bunch</option>
+                </select>
+                <input type="text" id="p-img" placeholder="Image URL">
+                <select id="p-category"></select>
+                <button onclick="addProduct()" class="btn-primary" style="width:100%">Add Product</button>
+            </div>
+            <div class="card">
+                <h3>Category Management</h3>
+                <input type="text" id="new-cat-name" placeholder="Category Name">
+                <button onclick="addCategory()" class="btn-primary" style="width:100%">Add Category</button>
+                <div id="admin-cat-list" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+            </div>
+        </div>
 
-    // 5. Products Real-time Listener
-    onSnapshot(collection(db, "products"), (snap) => {
-        allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        document.getElementById('admin-inventory').innerHTML = allProducts.map(p => `
-            <tr>
-                <td>${p.name}</td>
-                <td>
-                    <select onchange="updateStock('${p.id}', this.value)">
-                        <option value="Available" ${p.status==='Available'?'selected':''}>Available</option>
-                        <option value="Unavailable" ${p.status==='Unavailable'?'selected':''}>Unavailable</option>
-                    </select>
-                </td>
-                <td>₹${p.price}/${p.unit}</td>
-                <td>
-                    <button onclick="editProduct('${p.id}')">Edit</button> 
-                    <button onclick="deleteProduct('${p.id}')" style="color:red">Del</button>
-                </td>
-            </tr>`).join('');
-    });
+        <div class="card">
+            <h3>Recent Orders</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="admin-orders"></tbody>
+                </table>
+            </div>
+        </div>
 
-    // 6. Categories Real-time Listener
-    onSnapshot(collection(db, "categories"), (snap) => {
-        const cats = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        document.getElementById('p-category').innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-        document.getElementById('admin-cat-list').innerHTML = cats.map(c => `
-            <span class="category-chip" style="background:#e2e8f0; border:none; display:flex; align-items:center; gap:8px; padding: 5px 10px; border-radius: 20px; font-size: 12px;">
-                ${c.name} <b onclick="deleteCategory('${c.id}')" style="cursor:pointer; color:red">×</b>
-            </span>`).join('');
-    });
-};
+        <div class="card">
+            <h3>Product Inventory</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Item</th><th>Status</th><th>Price/Unit</th><th>Action</th></tr></thead>
+                    <tbody id="admin-inventory"></tbody>
+                </table>
+            </div>
+        </div>
 
-// --- NEW FUNCTIONS ---
-window.updateBannerSettings = async () => {
-    await setDoc(doc(db, "shopControl", "banner"), {
-        url: document.getElementById('banner-url-input').value,
-        active: document.getElementById('banner-active').checked
-    });
-    alert("Banner Settings Updated!");
-};
+        <div class="card">
+            <h3>Global Settings</h3>
+            <label>Default Delivery Charge (₹):</label><input type="number" id="delivery-charge-input">
+            <label>Support Number:</label><input type="tel" id="support-number-input">
+            <label>Shop Status:</label>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <input type="checkbox" id="shop-toggle" style="width:auto; margin:0;"> <span id="status-label">Open</span>
+            </div>
+            <button onclick="updateShopSettings()" class="btn-primary" style="width:100%;">Save Settings</button>
+        </div>
+    </div>
 
-window.addVillage = async () => {
-    const name = document.getElementById('village-name-input').value;
-    const charge = parseInt(document.getElementById('village-charge-input').value);
-    if(name && !isNaN(charge)) {
-        await addDoc(collection(db, "villages"), { name, charge });
-        document.getElementById('village-name-input').value = '';
-        document.getElementById('village-charge-input').value = '';
-    } else {
-        alert("Please enter village name and delivery charge");
-    }
-};
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Product</h3>
+            <input type="hidden" id="edit-id">
+            <input type="text" id="edit-name" placeholder="Name">
+            <input type="number" id="edit-price" placeholder="Price">
+            <select id="edit-unit">
+                <option value="piece">Piece</option>
+                <option value="kg">kg</option>
+                <option value="gram">gram</option>
+                <option value="bunch">bunch</option>
+            </select>
+            <input type="text" id="edit-img" placeholder="Image URL">
+            <button onclick="saveEdit()" class="btn-primary" style="width:100%">Save Changes</button>
+            <button onclick="document.getElementById('edit-modal').classList.remove('active')" class="btn-secondary" style="width:100%; margin-top:5px;">Cancel</button>
+        </div>
+    </div>
 
-window.deleteVillage = async (id) => {
-    if(confirm("Delete this village?")) await deleteDoc(doc(db, "villages", id));
-};
-// ----------------------
-
-function renderOrders() {
-    const start = document.getElementById('filter-start').value;
-    const end = document.getElementById('filter-end').value;
-    let rev = 0, sold = 0;
-    
-    document.getElementById('admin-orders').innerHTML = allOrders.filter(o => {
-        if(!o.createdAt) return true;
-        const d = o.createdAt.toDate();
-        if(start && d < new Date(start)) return false;
-        if(end && d > new Date(end + 'T23:59:59')) return false;
-        return true;
-    }).map(o => {
-        if(o.status === 'delivered') {
-            rev += o.total || 0;
-            (o.items || []).forEach(i => sold += i.qty || 0);
-        }
-        let dateStr = o.createdAt ? o.createdAt.toDate().toLocaleDateString() : "N/A";
-        let timeStr = o.createdAt ? o.createdAt.toDate().toLocaleTimeString() : "N/A";
-
-        return `
-            <tr>
-                <td>${dateStr}<br><small>${timeStr}</small></td>
-                <td>
-                    <b>${o.customerName || "Unknown"}</b><br>
-                    <small>${o.customerPhone || ""}</small><br>
-                    <small>${o.customerAddress || ""}</small>
-                </td>
-                <td>₹${o.total || 0}</td>
-                <td><span class="status-tag status-${o.status}">${o.status}</span></td>
-                <td>
-                    <select onchange="upStatus('${o.id}', this.value)" style="width:110px; font-size:10px;">
-                        <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
-                        <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
-                        <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
-                    </select>
-                </td>
-            </tr>`;
-    }).join('');
-
-    document.getElementById('total-rev-val').innerText = '₹' + rev;
-    document.getElementById('total-sold-val').innerText = sold;
-}
-
-window.applyFilters = () => renderOrders();
-window.upStatus = async (id, s) => await updateDoc(doc(db, "orders", id), { status: s });
-window.updateStock = async (id, s) => await updateDoc(doc(db, "products", id), { status: s });
-
-window.editProduct = (id) => {
-    const p = allProducts.find(x => x.id === id);
-    document.getElementById('edit-id').value = id;
-    document.getElementById('edit-name').value = p.name;
-    document.getElementById('edit-price').value = p.price;
-    document.getElementById('edit-unit').value = p.unit || 'piece';
-    document.getElementById('edit-img').value = p.imageUrl || '';
-    document.getElementById('edit-modal').classList.add('active');
-};
-
-window.saveEdit = async () => {
-    await updateDoc(doc(db, "products", document.getElementById('edit-id').value), {
-        name: document.getElementById('edit-name').value, 
-        price: parseInt(document.getElementById('edit-price').value),
-        unit: document.getElementById('edit-unit').value, 
-        imageUrl: document.getElementById('edit-img').value
-    });
-    document.getElementById('edit-modal').classList.remove('active');
-};
-
-window.updateShopSettings = async () => {
-    await setDoc(doc(db, "shopControl", "status"), {
-        isClosed: document.getElementById('shop-toggle').checked,
-        deliveryCharge: parseInt(document.getElementById('delivery-charge-input').value) || 0,
-        supportNumber: document.getElementById('support-number-input').value
-    }, { merge: true });
-    alert("Settings Saved Successfully");
-};
-
-window.addProduct = async () => {
-    const name = document.getElementById('p-name').value;
-    const price = parseInt(document.getElementById('p-price').value);
-    if(name && price) {
-        await addDoc(collection(db, "products"), { 
-            name, price, 
-            unit: document.getElementById('p-unit').value, 
-            imageUrl: document.getElementById('p-img').value, 
-            category: document.getElementById('p-category').value, 
-            status: 'Available', 
-            createdAt: serverTimestamp() 
-        });
-        alert("Product Added");
-    }
-};
-
-window.addCategory = async () => {
-    const n = document.getElementById('new-cat-name').value;
-    if(n) await addDoc(collection(db, "categories"), { name: n });
-};
-
-window.deleteProduct = async (id) => { if(confirm("Delete Product?")) await deleteDoc(doc(db, "products", id)); };
-window.deleteCategory = async (id) => { if(confirm("Delete Category?")) await deleteDoc(doc(db, "categories", id)); };
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
