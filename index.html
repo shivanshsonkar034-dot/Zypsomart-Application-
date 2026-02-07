@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zypsomart</title>
+    <title>Zypsomart | Online Shop</title>
     <meta name="theme-color" content="#22c55e">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="style.css">
@@ -13,20 +13,25 @@
 
     <div id="shop-closed-overlay" style="display:none; position:fixed; inset:0; background:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
         <h2 style="color:var(--danger)">SHOP CLOSED</h2>
-        <p id="opening-time-text"></p>
+        <p id="opening-time-text">We are not accepting orders right now.</p>
     </div>
 
     <header class="app-header">
         <div class="container">
             <div class="logo-row">
-                <img src="logo.png" id="app-logo">
-                <div style="display:flex; gap:10px;">
-                    <button class="icon-btn" id="my-orders-btn" style="display:none">📦</button>
-                    <button class="icon-btn" id="auth-btn">👤</button>
+                <div style="display:flex; align-items:center; gap:10px;" onclick="openAdminPin()">
+                    <img src="logo.png" id="app-logo" alt="Logo">
+                    <h1 style="font-size:18px; font-weight:800; margin:0; color:var(--dark); letter-spacing:-0.5px;">ZYPSOMART</h1>
+                </div>
+                
+                <div style="display:flex; gap:8px;">
+                    <button class="icon-btn" id="contact-btn" title="Contact Support">📞</button>
+                    <button class="icon-btn" id="my-orders-btn" style="display:none" title="My Orders">📦</button>
+                    <button class="icon-btn" id="auth-btn" title="Login/Logout">👤</button>
                 </div>
             </div>
             
-            <input type="text" id="product-search" placeholder="Search products...">
+            <input type="text" id="product-search" placeholder="Search fresh products...">
 
             <div id="banner-container" style="display:none; margin-top:15px;">
                 <img id="promo-banner" src="" style="width:100%; border-radius:15px; box-shadow: var(--shadow); display:block;">
@@ -39,10 +44,36 @@
         <div id="product-grid" class="product-grid"></div>
     </div>
 
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 id="auth-title" style="margin:0;">Login to Zypsomart</h3>
+                <button onclick="document.getElementById('auth-modal').classList.remove('active')" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <input type="email" id="auth-email" placeholder="Email Address" class="capsule-input">
+            <input type="password" id="auth-pass" placeholder="Password" class="capsule-input">
+            
+            <button id="auth-action-btn" class="btn-primary" style="width:100%; margin-top:10px;">Login Now</button>
+            
+            <p id="auth-switch" style="text-align:center; font-size:13px; margin-top:15px; cursor:pointer; color:var(--primary); font-weight:600;">
+                New User? Create an Account
+            </p>
+        </div>
+    </div>
+
+    <div id="admin-pin-modal" class="modal">
+        <div class="modal-content">
+            <h3>Admin Access</h3>
+            <input type="password" id="admin-pin-input" placeholder="Enter Admin PIN" class="capsule-input">
+            <button onclick="checkAdminPin()" class="btn-primary" style="width:100%">Verify PIN</button>
+            <button onclick="document.getElementById('admin-pin-modal').classList.remove('active')" class="btn-secondary" style="width:100%; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+
     <div id="cart-sidebar" class="cart-sidebar">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3>My Cart</h3>
-            <button onclick="toggleCart()" class="close-btn" style="position:static;">&times;</button>
+            <button onclick="toggleCart()" class="close-btn" style="position:static; background:none; border:none; font-size:24px;">&times;</button>
         </div>
         <div id="cart-items"></div>
         
@@ -74,7 +105,6 @@
 
     <script type="module" src="app.js"></script>
     <script>
-        // Admin Pin logic (Keep your original)
         window.openAdminPin = () => { document.getElementById('admin-pin-modal').classList.add('active'); };
         window.checkAdminPin = () => {
             if(document.getElementById('admin-pin-input').value === "0000") window.location.href="admin.html";
