@@ -12,6 +12,7 @@
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 12px; }
         .stat-box { background: var(--primary); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         input, select { padding: 8px; margin-bottom: 10px; width: 100%; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .village-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
         @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -25,6 +26,27 @@
         <div class="grid-2" style="margin-bottom:20px;">
             <div class="stat-box"><h3>Total Revenue</h3><h2 id="total-rev-val">₹0</h2><small>(Delivered Only)</small></div>
             <div class="stat-box" style="background:var(--dark)"><h3>Products Sold</h3><h2 id="total-sold-val">0</h2></div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>Festival Banner & Offer</h3>
+                <label>Banner Image URL:</label>
+                <input type="text" id="banner-url-input" placeholder="https://example.com/image.jpg">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <input type="checkbox" id="banner-active" style="width:auto; margin:0;"> <span>Show Banner to Users</span>
+                </div>
+                <button onclick="updateBannerSettings()" class="btn-primary" style="width:100%">Update Banner</button>
+            </div>
+
+            <div class="card">
+                <h3>Village & Delivery Charges</h3>
+                <input type="text" id="village-name-input" placeholder="Village Name">
+                <input type="number" id="village-charge-input" placeholder="Delivery Charge (₹)">
+                <button onclick="addVillage()" class="btn-primary" style="width:100%">Add Village</button>
+                <div id="admin-village-list" style="margin-top:15px; max-height:150px; overflow-y:auto; border-top:1px solid #eee;">
+                    </div>
+            </div>
         </div>
 
         <div class="card">
@@ -60,7 +82,7 @@
         </div>
 
         <div class="card">
-            <h3>Recent Orders (incl. Cancelled/Returns)</h3>
+            <h3>Recent Orders</h3>
             <div style="overflow-x:auto;">
                 <table>
                     <thead><tr><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
@@ -81,7 +103,7 @@
 
         <div class="card">
             <h3>Global Settings</h3>
-            <label>Delivery Charge (₹):</label><input type="number" id="delivery-charge-input">
+            <label>Default Delivery Charge (₹):</label><input type="number" id="delivery-charge-input">
             <label>Support Number:</label><input type="tel" id="support-number-input">
             <label>Shop Status:</label>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">

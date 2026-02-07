@@ -16,13 +16,32 @@ window.initAdmin = () => {
         }
     });
 
-    // 2. Orders Real-time Listener
+    // 2. Banner Settings Listener
+    onSnapshot(doc(db, "shopControl", "banner"), (docSnap) => {
+        if(docSnap.exists()){
+            const b = docSnap.data();
+            document.getElementById('banner-url-input').value = b.url || "";
+            document.getElementById('banner-active').checked = b.active || false;
+        }
+    });
+
+    // 3. Villages Listener
+    onSnapshot(collection(db, "villages"), (snap) => {
+        const villages = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        document.getElementById('admin-village-list').innerHTML = villages.map(v => `
+            <div class="village-item">
+                <span><b>${v.name}</b> (₹${v.charge})</span>
+                <button onclick="deleteVillage('${v.id}')" style="color:red; border:none; background:none; cursor:pointer;">Delete</button>
+            </div>`).join('');
+    });
+
+    // 4. Orders Real-time Listener
     onSnapshot(query(collection(db, "orders"), orderBy("createdAt", "desc")), (snap) => {
         allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderOrders();
     });
 
-    // 3. Products Real-time Listener
+    // 5. Products Real-time Listener
     onSnapshot(collection(db, "products"), (snap) => {
         allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         document.getElementById('admin-inventory').innerHTML = allProducts.map(p => `
@@ -35,20 +54,49 @@ window.initAdmin = () => {
                     </select>
                 </td>
                 <td>₹${p.price}/${p.unit}</td>
-                <td><button onclick="editProduct('${p.id}')">Edit</button> <button onclick="deleteProduct('${p.id}')" style="color:red">Del</button></td>
+                <td>
+                    <button onclick="editProduct('${p.id}')">Edit</button> 
+                    <button onclick="deleteProduct('${p.id}')" style="color:red">Del</button>
+                </td>
             </tr>`).join('');
     });
 
-    // 4. Categories Real-time Listener
+    // 6. Categories Real-time Listener
     onSnapshot(collection(db, "categories"), (snap) => {
         const cats = snap.docs.map(d => ({id: d.id, ...d.data()}));
         document.getElementById('p-category').innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
         document.getElementById('admin-cat-list').innerHTML = cats.map(c => `
-            <span class="category-chip" style="background:#e2e8f0; border:none; display:flex; align-items:center; gap:8px;">
+            <span class="category-chip" style="background:#e2e8f0; border:none; display:flex; align-items:center; gap:8px; padding: 5px 10px; border-radius: 20px; font-size: 12px;">
                 ${c.name} <b onclick="deleteCategory('${c.id}')" style="cursor:pointer; color:red">×</b>
             </span>`).join('');
     });
 };
+
+// --- NEW FUNCTIONS ---
+window.updateBannerSettings = async () => {
+    await setDoc(doc(db, "shopControl", "banner"), {
+        url: document.getElementById('banner-url-input').value,
+        active: document.getElementById('banner-active').checked
+    });
+    alert("Banner Settings Updated!");
+};
+
+window.addVillage = async () => {
+    const name = document.getElementById('village-name-input').value;
+    const charge = parseInt(document.getElementById('village-charge-input').value);
+    if(name && !isNaN(charge)) {
+        await addDoc(collection(db, "villages"), { name, charge });
+        document.getElementById('village-name-input').value = '';
+        document.getElementById('village-charge-input').value = '';
+    } else {
+        alert("Please enter village name and delivery charge");
+    }
+};
+
+window.deleteVillage = async (id) => {
+    if(confirm("Delete this village?")) await deleteDoc(doc(db, "villages", id));
+};
+// ----------------------
 
 function renderOrders() {
     const start = document.getElementById('filter-start').value;
@@ -62,29 +110,33 @@ function renderOrders() {
         if(end && d > new Date(end + 'T23:59:59')) return false;
         return true;
     }).map(o => {
-        // Revenue Rules: Only delivered. Exclude Cancelled/Returns.
         if(o.status === 'delivered') {
-            rev += o.total;
-            o.items.forEach(i => sold += i.qty);
+            rev += o.total || 0;
+            (o.items || []).forEach(i => sold += i.qty || 0);
         }
-        const timeStr = o.createdAt ? o.createdAt.toDate().toLocaleDateString() : "...";
+        let dateStr = o.createdAt ? o.createdAt.toDate().toLocaleDateString() : "N/A";
+        let timeStr = o.createdAt ? o.createdAt.toDate().toLocaleTimeString() : "N/A";
+
         return `
             <tr>
-                <td>${timeStr}</td>
-                <td>${o.customerName}</td>
-                <td>₹${o.total}</td>
+                <td>${dateStr}<br><small>${timeStr}</small></td>
+                <td>
+                    <b>${o.customerName || "Unknown"}</b><br>
+                    <small>${o.customerPhone || ""}</small><br>
+                    <small>${o.customerAddress || ""}</small>
+                </td>
+                <td>₹${o.total || 0}</td>
                 <td><span class="status-tag status-${o.status}">${o.status}</span></td>
                 <td>
-                    <select onchange="upStatus('${o.id}', this.value)" style="width:100px; font-size:10px;">
+                    <select onchange="upStatus('${o.id}', this.value)" style="width:110px; font-size:10px;">
                         <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
                         <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
                         <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
-                        <option value="return_pending" ${o.status==='return_pending'?'selected':''}>Return Req</option>
-                        <option value="returned" ${o.status==='returned'?'selected':''}>Accepted/Returned</option>
                     </select>
                 </td>
             </tr>`;
     }).join('');
+
     document.getElementById('total-rev-val').innerText = '₹' + rev;
     document.getElementById('total-sold-val').innerText = sold;
 }
@@ -127,10 +179,12 @@ window.addProduct = async () => {
     const price = parseInt(document.getElementById('p-price').value);
     if(name && price) {
         await addDoc(collection(db, "products"), { 
-            name, price, unit: document.getElementById('p-unit').value, 
+            name, price, 
+            unit: document.getElementById('p-unit').value, 
             imageUrl: document.getElementById('p-img').value, 
             category: document.getElementById('p-category').value, 
-            status: 'Available', createdAt: serverTimestamp() 
+            status: 'Available', 
+            createdAt: serverTimestamp() 
         });
         alert("Product Added");
     }
