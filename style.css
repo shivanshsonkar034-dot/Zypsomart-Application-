@@ -1,363 +1,230 @@
-:root { 
-    --primary: #22c55e; 
-    --dark: #0f172a; 
-    --light: #f8fafc; 
-    --white: #ffffff; 
-    --danger: #ef4444; 
-    --shadow: 0 4px 15px rgba(0,0,0,0.08); 
-}
+/* ===== MODERN UI ENHANCEMENTS ===== */
 
-body { font-family: 'Inter', sans-serif; margin: 0; background: var(--light); padding-top: 175px; overflow-x: hidden; }
-
-/* Fixed Layout Containers */
-.container { max-width: 500px; margin: 0 auto; padding: 0 15px; }
-
-.app-header { background: var(--white); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; box-shadow: var(--shadow); }
-.logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-#app-logo { height: 35px; width: auto; }
-
-.icon-btn { background: #f1f5f9; border: none; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; font-size: 18px; }
-#cart-count { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; }
-
-#product-search { width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 14px; outline: none; }
-.category-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-.category-scroll::-webkit-scrollbar { display: none; }
-
-.category-chip { background: white; padding: 8px 18px; border-radius: 50px; font-size: 13px; white-space: nowrap; cursor: pointer; border: 1px solid #e2e8f0; transition: 0.3s; }
-.category-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-/* Product Cards */
-.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 30px; }
-.product-card { background: white; padding: 12px; border-radius: 15px; box-shadow: var(--shadow); text-align: center; position: relative; transition: 0.2s; }
-.product-img { width: 100%; height: 100px; object-fit: contain; margin-bottom: 10px; }
-.status-badge { position: absolute; top: 8px; right: 8px; background: var(--danger); color: white; font-size: 9px; padding: 3px 8px; border-radius: 50px; font-weight: bold; }
-.out-of-stock { opacity: 0.6; pointer-events: none; }
-
-/* Buttons & Inputs */
-.btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.btn-primary:active { transform: scale(0.98); }
-.btn-secondary { background: #f1f5f9; color: var(--dark); border: none; padding: 10px; border-radius: 10px; cursor: pointer; }
-.capsule-input { width: 100%; padding: 14px 20px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 50px; box-sizing: border-box; outline: none; font-family: inherit; }
-
-/* Cart & Modals */
-.sidebar-overlay { position: fixed; inset: 0; background: var(--white); z-index: 2000; display: none; overflow-y: auto; }
-.sidebar-overlay.active { display: block; animation: slideUp 0.3s ease; }
-
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 15px; }
-.modal.active { display: flex; }
-.modal-content { background: white; padding: 25px; border-radius: 24px; width: 100%; max-width: 400px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-.close-btn { position: absolute; top: 15px; right: 15px; border: none; background: none; font-size: 24px; cursor: pointer; color: #94a3b8; }
-
-.cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
-.qty-control { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 5px 12px; border-radius: 50px; border: 1px solid #e2e8f0; }
-.qty-control button { border: none; background: transparent; font-size: 18px; font-weight: bold; cursor: pointer; width: 25px; height: 25px; }
-
-/* Status Tags */
-.status-tag { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.status-pending { background: #fef3c7; color: #d97706; }
-.status-delivered { background: #dcfce7; color: #16a34a; }
-.status-cancelled { background: #fee2e2; color: #ef4444; }
-.status-return_pending { background: #e0e7ff; color: #4338ca; }
-.status-returned { background: #f1f5f9; color: #64748b; }
-
-@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-/* ===== APPLE ULTRA CLEAN DESIGN SYSTEM ===== */
-
-/* 1. SUBTLE ANIMATED GRADIENT BACKGROUND */
+/* Subtle gradient background */
 body {
-    background: linear-gradient(
-        135deg,
-        #f8fafc 0%,
-        #f0f9ff 25%,
-        #f5f3ff 50%,
-        #f0fdf4 75%,
-        #f8fafc 100%
-    );
-    background-size: 400% 400%;
-    animation: gradientFlow 20s ease-in-out infinite;
-    scroll-behavior: smooth;
+    background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 50%, #ecfdf5 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
 }
 
-@keyframes gradientFlow {
-    0% { background-position: 0% 50% }
-    50% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
-}
-
-/* 2. APPLE-STYLE REFINEMENTS */
-.container {
-    padding: 0 20px;
-}
-
+/* Glassmorphism effects - applied safely */
 .app-header {
-    backdrop-filter: saturate(180%) blur(20px);
-    background: rgba(255, 255, 255, 0.92);
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* 3. PRODUCT CARD ENHANCEMENT */
+.modal-content {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Premium product card enhancements */
 .product-card {
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    border: 0.5px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 
-        0 2px 12px rgba(0, 0, 0, 0.03),
-        0 1px 2px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0.1, 1), 
+                box-shadow 0.3s cubic-bezier(0.2, 0, 0.1, 1),
+                opacity 0.3s ease;
+    will-change: transform;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.92);
     overflow: hidden;
+    position: relative;
+}
+
+.product-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 
-        0 8px 25px rgba(0, 0, 0, 0.06),
-        0 2px 8px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(34, 197, 94, 0.12), 
+                0 4px 15px rgba(0,0,0,0.08);
 }
 
+.product-card:hover::before {
+    opacity: 1;
+}
+
+/* Premium button glow effect */
+.btn-primary {
+    position: relative;
+    background: linear-gradient(135deg, var(--primary) 0%, #16a34a 100%);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+    transition: all 0.3s cubic-bezier(0.2, 0, 0.1, 1);
+    overflow: hidden;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-primary:hover:not(:active) {
+    box-shadow: 0 6px 25px rgba(34, 197, 94, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-primary:hover::after {
+    opacity: 1;
+}
+
+/* Enhanced category chips */
+.category-chip {
+    transition: all 0.25s cubic-bezier(0.2, 0, 0.1, 1);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.category-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-color: var(--primary);
+}
+
+/* Smooth search input focus */
+#product-search {
+    transition: all 0.25s ease;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+#product-search:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    background: var(--white);
+}
+
+/* Enhanced cart sidebar */
+.sidebar-overlay {
+    background: rgba(248, 250, 252, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Subtle icon button enhancements */
+.icon-btn {
+    transition: all 0.2s cubic-bezier(0.2, 0, 0.1, 1);
+    background: rgba(241, 245, 249, 0.8);
+}
+
+.icon-btn:hover {
+    background: rgba(226, 232, 240, 0.9);
+    transform: scale(1.05);
+}
+
+/* Status badge enhancements */
+.status-badge {
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    animation: pulse-subtle 2s infinite;
+}
+
+@keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* Smooth quantity controls */
+.qty-control button {
+    transition: all 0.2s ease;
+    border-radius: 50%;
+}
+
+.qty-control button:active {
+    background: rgba(148, 163, 184, 0.1);
+    transform: scale(0.9);
+}
+
+/* Enhanced modal entrance */
+@keyframes modalEntrance {
+    from { 
+        opacity: 0; 
+        transform: scale(0.95) translateY(10px);
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal.active .modal-content {
+    animation: modalEntrance 0.3s cubic-bezier(0.2, 0, 0.1, 1);
+}
+
+/* Subtle scrollbar styling for modern browsers */
+.category-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+
+.category-scroll::-webkit-scrollbar {
+    height: 4px;
+    display: block;
+}
+
+.category-scroll::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 2px;
+}
+
+.category-scroll::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 2px;
+    opacity: 0.3;
+}
+
+/* Product image subtle hover effect */
 .product-img {
-    height: 110px;
-    object-fit: contain;
-    transition: transform 0.4s ease;
+    transition: transform 0.5s cubic-bezier(0.2, 0, 0.1, 1);
 }
 
 .product-card:hover .product-img {
     transform: scale(1.05);
 }
 
-/* 4. PRODUCT TYPOGRAPHY REFINEMENT */
-.product-card h3 {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: #1e293b;
-    margin: 8px 0 4px;
-    font-size: 14px;
-    line-height: 1.4;
+/* Out of stock subtle animation */
+.out-of-stock {
+    animation: gentleFade 2s ease-in-out infinite alternate;
 }
 
-.product-price {
-    font-size: 15px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.02em;
-    margin: 4px 0;
+@keyframes gentleFade {
+    from { opacity: 0.5; }
+    to { opacity: 0.7; }
 }
 
-/* 5. BUTTON ENHANCEMENTS */
-.btn-primary {
-    border-radius: 14px;
-    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
-    box-shadow: 
-        0 2px 8px rgba(34, 197, 94, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    padding: 14px 20px;
-    transition: all 0.25s ease;
+/* Responsive adjustments for larger screens */
+@media (min-width: 768px) {
+    .product-grid {
+        gap: 20px;
+    }
+    
+    .product-card {
+        padding: 16px;
+    }
 }
 
-.btn-primary:hover {
-    box-shadow: 
-        0 4px 16px rgba(34, 197, 94, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    transform: translateY(-1px);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
-
-.icon-btn {
-    background: rgba(241, 245, 249, 0.6);
-    backdrop-filter: blur(10px);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    transition: all 0.2s ease;
-}
-
-.icon-btn:hover {
-    background: rgba(241, 245, 249, 0.8);
-    transform: scale(1.05);
-}
-
-/* 6. CATEGORY CHIPS - FROSTED GLASS */
-.category-chip {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.7);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.03),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    transition: all 0.3s ease;
-}
-
-.category-chip.active {
-    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
-    border-color: transparent;
-    box-shadow: 
-        0 2px 8px rgba(34, 197, 94, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-/* 7. MODAL & SIDEBAR REFINEMENT */
-.modal-content {
-    backdrop-filter: saturate(180%) blur(30px);
-    background: rgba(255, 255, 255, 0.88);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.08),
-        0 1px 3px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.sidebar-overlay {
-    backdrop-filter: saturate(180%) blur(30px);
-    background: rgba(255, 255, 255, 0.95);
-}
-
-/* 8. SEARCH INPUT ENHANCEMENT */
-#product-search {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.7);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 
-        inset 0 1px 3px rgba(0, 0, 0, 0.04),
-        0 1px 0 rgba(255, 255, 255, 0.8);
-    transition: all 0.3s ease;
-}
-
-#product-search:focus {
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 
-        0 0 0 3px rgba(34, 197, 94, 0.1),
-        inset 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-/* 9. QUANTITY CONTROL REFINEMENT */
-.qty-control {
-    backdrop-filter: blur(10px);
-    background: rgba(248, 250, 252, 0.6);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.03),
-        0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-/* 10. SMOOTH SCROLLING ENHANCEMENT */
-.category-scroll {
-    scroll-behavior: smooth;
-}
-
-/* 11. PERFORMANCE OPTIMIZATION */
+/* Performance optimization layer */
 @media (prefers-reduced-motion: reduce) {
-    body,
-    .product-card,
-    .btn-primary,
-    .category-chip {
+    *, 
+    *::before, 
+    *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
 }
-
-/* 12. DARK MODE SUPPORT (OPTIONAL ENHANCEMENT) */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: linear-gradient(
-            135deg,
-            #0f172a 0%,
-            #1e293b 25%,
-            #1e1b4b 50%,
-            #064e3b 75%,
-            #0f172a 100%
-        );
-    }
-    
-    .app-header {
-        background: rgba(15, 23, 42, 0.92);
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .product-card {
-        background: rgba(30, 41, 59, 0.85);
-        border: 0.5px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .product-card h3 {
-        color: #f1f5f9;
-    }
-    
-    .modal-content {
-        background: rgba(30, 41, 59, 0.92);
-        border: 0.5px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .sidebar-overlay {
-        background: rgba(15, 23, 42, 0.98);
-    }
-    
-    #product-search {
-        background: rgba(30, 41, 59, 0.7);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #f1f5f9;
-    }
-    
-    .category-chip {
-        background: rgba(30, 41, 59, 0.7);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #cbd5e1;
-    }
-}
-
-/* 13. RESPONSIVE REFINEMENTS */
-@media (max-width: 360px) {
-    .product-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .container {
-        padding: 0 16px;
-    }
-}
-
-@media (min-width: 768px) {
-    .container {
-        max-width: 720px;
-    }
-    
-    .product-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-}
-
-/* 14. LOADING STATES (OPTIONAL) */
-.product-card.loading {
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-/* 15. ACCESSIBILITY ENHANCEMENTS */
-.btn-primary:focus-visible,
-.icon-btn:focus-visible,
-.category-chip:focus-visible {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-}
-
-/* ===== END OF APPLE ULTRA CLEAN DESIGN ===== */
