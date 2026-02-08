@@ -1,180 +1,363 @@
-/* --- PREMIUM FUTURISTIC DARK THEME EXTENSION --- */
-
-:root {
-    --deep-bg: #0b0f1a;
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --neon-accent: linear-gradient(90deg, #22c55e, #06b6d4);
-    --price-gradient: linear-gradient(135deg, #fbbf24, #f59e0b);
+:root { 
+    --primary: #22c55e; 
+    --dark: #0f172a; 
+    --light: #f8fafc; 
+    --white: #ffffff; 
+    --danger: #ef4444; 
+    --shadow: 0 4px 15px rgba(0,0,0,0.08); 
 }
 
-/* 1. Animated Gradient Background */
+body { font-family: 'Inter', sans-serif; margin: 0; background: var(--light); padding-top: 175px; overflow-x: hidden; }
+
+/* Fixed Layout Containers */
+.container { max-width: 500px; margin: 0 auto; padding: 0 15px; }
+
+.app-header { background: var(--white); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; box-shadow: var(--shadow); }
+.logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+#app-logo { height: 35px; width: auto; }
+
+.icon-btn { background: #f1f5f9; border: none; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; font-size: 18px; }
+#cart-count { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+
+#product-search { width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 14px; outline: none; }
+.category-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+.category-scroll::-webkit-scrollbar { display: none; }
+
+.category-chip { background: white; padding: 8px 18px; border-radius: 50px; font-size: 13px; white-space: nowrap; cursor: pointer; border: 1px solid #e2e8f0; transition: 0.3s; }
+.category-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* Product Cards */
+.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 30px; }
+.product-card { background: white; padding: 12px; border-radius: 15px; box-shadow: var(--shadow); text-align: center; position: relative; transition: 0.2s; }
+.product-img { width: 100%; height: 100px; object-fit: contain; margin-bottom: 10px; }
+.status-badge { position: absolute; top: 8px; right: 8px; background: var(--danger); color: white; font-size: 9px; padding: 3px 8px; border-radius: 50px; font-weight: bold; }
+.out-of-stock { opacity: 0.6; pointer-events: none; }
+
+/* Buttons & Inputs */
+.btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-secondary { background: #f1f5f9; color: var(--dark); border: none; padding: 10px; border-radius: 10px; cursor: pointer; }
+.capsule-input { width: 100%; padding: 14px 20px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 50px; box-sizing: border-box; outline: none; font-family: inherit; }
+
+/* Cart & Modals */
+.sidebar-overlay { position: fixed; inset: 0; background: var(--white); z-index: 2000; display: none; overflow-y: auto; }
+.sidebar-overlay.active { display: block; animation: slideUp 0.3s ease; }
+
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 15px; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 25px; border-radius: 24px; width: 100%; max-width: 400px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.close-btn { position: absolute; top: 15px; right: 15px; border: none; background: none; font-size: 24px; cursor: pointer; color: #94a3b8; }
+
+.cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+.qty-control { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 5px 12px; border-radius: 50px; border: 1px solid #e2e8f0; }
+.qty-control button { border: none; background: transparent; font-size: 18px; font-weight: bold; cursor: pointer; width: 25px; height: 25px; }
+
+/* Status Tags */
+.status-tag { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.status-pending { background: #fef3c7; color: #d97706; }
+.status-delivered { background: #dcfce7; color: #16a34a; }
+.status-cancelled { background: #fee2e2; color: #ef4444; }
+.status-return_pending { background: #e0e7ff; color: #4338ca; }
+.status-returned { background: #f1f5f9; color: #64748b; }
+
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ===== APPLE ULTRA CLEAN DESIGN SYSTEM ===== */
+
+/* 1. SUBTLE ANIMATED GRADIENT BACKGROUND */
 body {
-    background: var(--deep-bg);
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.1) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
-    background-attachment: fixed;
-    color: #e2e8f0;
-    position: relative;
-    z-index: 1;
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(45deg, #0b0f1a, #1e293b, #0b0f1a);
+    background: linear-gradient(
+        135deg,
+        #f8fafc 0%,
+        #f0f9ff 25%,
+        #f5f3ff 50%,
+        #f0fdf4 75%,
+        #f8fafc 100%
+    );
     background-size: 400% 400%;
-    z-index: -1;
-    animation: gradientMove 15s ease infinite;
-    opacity: 0.5;
+    animation: gradientFlow 20s ease-in-out infinite;
+    scroll-behavior: smooth;
 }
 
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes gradientFlow {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
 }
 
-/* 2. Apple-Style Glass Header */
+/* 2. APPLE-STYLE REFINEMENTS */
+.container {
+    padding: 0 20px;
+}
+
 .app-header {
-    background: rgba(15, 23, 42, 0.8) !important;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid var(--glass-border);
+    backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
 }
 
-.logo-row span {
-    color: #f8fafc !important;
-    letter-spacing: -0.5px;
-}
-
-#product-search {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid var(--glass-border);
-    color: white;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* 3. Frosted Category Chips */
-.category-chip {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    color: #94a3b8;
-    backdrop-filter: blur(5px);
-}
-
-.category-chip.active {
-    background: var(--neon-accent);
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-    border: none;
-    color: #0f172a;
-    font-weight: 700;
-}
-
-/* 4. Futuristic Product Cards */
+/* 3. PRODUCT CARD ENHANCEMENT */
 .product-card {
-    background: var(--card-bg);
-    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(10px);
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 0.5px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 2px 12px rgba(0, 0, 0, 0.03),
+        0 1px 2px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     overflow: hidden;
 }
 
 .product-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: rgba(34, 197, 94, 0.5);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(34, 197, 94, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Full Image Display */
 .product-img {
-    height: 120px;
-    object-fit: contain !important; /* Prevents cropping */
-    transition: transform 0.6s ease;
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    height: 110px;
+    object-fit: contain;
+    transition: transform 0.4s ease;
 }
 
 .product-card:hover .product-img {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-/* Colorful Product Name */
-.product-card h4 {
-    background: var(--neon-accent);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800;
+/* 4. PRODUCT TYPOGRAPHY REFINEMENT */
+.product-card h3 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #1e293b;
+    margin: 8px 0 4px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.product-price {
     font-size: 15px;
-    letter-spacing: 0.3px;
-    margin: 10px 0 5px 0;
-}
-
-/* Vibrant Price Text */
-.product-card p {
-    background: var(--price-gradient);
+    font-weight: 700;
+    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 12px;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    margin: 4px 0;
 }
 
-/* 5. Neon Glow Buttons */
+/* 5. BUTTON ENHANCEMENTS */
 .btn-primary {
-    background: var(--neon-accent);
-    color: #0f172a;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 1px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+    box-shadow: 
+        0 2px 8px rgba(34, 197, 94, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 14px 20px;
+    transition: all 0.25s ease;
 }
 
 .btn-primary:hover {
-    box-shadow: 0 0 25px rgba(34, 197, 94, 0.5);
-    filter: brightness(1.1);
+    box-shadow: 
+        0 4px 16px rgba(34, 197, 94, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
 }
 
-/* 6. Premium Sidebar & Modals */
-.sidebar-overlay {
-    background: rgba(11, 15, 26, 0.95) !important;
-    backdrop-filter: blur(25px);
+.btn-primary:active {
+    transform: translateY(0);
 }
 
+.icon-btn {
+    background: rgba(241, 245, 249, 0.6);
+    backdrop-filter: blur(10px);
+    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(241, 245, 249, 0.8);
+    transform: scale(1.05);
+}
+
+/* 6. CATEGORY CHIPS - FROSTED GLASS */
+.category-chip {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.7);
+    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: all 0.3s ease;
+}
+
+.category-chip.active {
+    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+    border-color: transparent;
+    box-shadow: 
+        0 2px 8px rgba(34, 197, 94, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 7. MODAL & SIDEBAR REFINEMENT */
 .modal-content {
-    background: #1e293b;
-    border: 1px solid var(--glass-border);
-    color: white;
+    backdrop-filter: saturate(180%) blur(30px);
+    background: rgba(255, 255, 255, 0.88);
+    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.cart-item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.sidebar-overlay {
+    backdrop-filter: saturate(180%) blur(30px);
+    background: rgba(255, 255, 255, 0.95);
 }
 
+/* 8. SEARCH INPUT ENHANCEMENT */
+#product-search {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.7);
+    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.04),
+        0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+#product-search:focus {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 
+        0 0 0 3px rgba(34, 197, 94, 0.1),
+        inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* 9. QUANTITY CONTROL REFINEMENT */
 .qty-control {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    background: rgba(248, 250, 252, 0.6);
+    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.03),
+        0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.qty-control span, .qty-control button {
-    color: white;
+/* 10. SMOOTH SCROLLING ENHANCEMENT */
+.category-scroll {
+    scroll-behavior: smooth;
 }
 
-/* 7. Capsule Input Styling */
-.capsule-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    color: white;
+/* 11. PERFORMANCE OPTIMIZATION */
+@media (prefers-reduced-motion: reduce) {
+    body,
+    .product-card,
+    .btn-primary,
+    .category-chip {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
-.capsule-input:focus {
-    border-color: #22c55e;
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+/* 12. DARK MODE SUPPORT (OPTIONAL ENHANCEMENT) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(
+            135deg,
+            #0f172a 0%,
+            #1e293b 25%,
+            #1e1b4b 50%,
+            #064e3b 75%,
+            #0f172a 100%
+        );
+    }
+    
+    .app-header {
+        background: rgba(15, 23, 42, 0.92);
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .product-card {
+        background: rgba(30, 41, 59, 0.85);
+        border: 0.5px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .product-card h3 {
+        color: #f1f5f9;
+    }
+    
+    .modal-content {
+        background: rgba(30, 41, 59, 0.92);
+        border: 0.5px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .sidebar-overlay {
+        background: rgba(15, 23, 42, 0.98);
+    }
+    
+    #product-search {
+        background: rgba(30, 41, 59, 0.7);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+    }
+    
+    .category-chip {
+        background: rgba(30, 41, 59, 0.7);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #cbd5e1;
+    }
 }
 
-/* 8. Status Tags Refresh */
-.status-tag {
-    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+/* 13. RESPONSIVE REFINEMENTS */
+@media (max-width: 360px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .container {
+        padding: 0 16px;
+    }
 }
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 720px;
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+}
+
+/* 14. LOADING STATES (OPTIONAL) */
+.product-card.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* 15. ACCESSIBILITY ENHANCEMENTS */
+.btn-primary:focus-visible,
+.icon-btn:focus-visible,
+.category-chip:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ===== END OF APPLE ULTRA CLEAN DESIGN ===== */
