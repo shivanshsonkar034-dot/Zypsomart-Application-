@@ -1,290 +1,213 @@
-import { auth, db } from './firebase.js';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-import { collection, onSnapshot, query, where, orderBy, addDoc, doc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { db, auth } from './firebase.js';
+import { 
+    collection, 
+    onSnapshot, 
+    addDoc, 
+    serverTimestamp, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-let currentUser = null;
+// State
 let cart = [];
 let allProducts = [];
-let currentCategory = 'all';
-let globalDeliveryCharge = 0;
-let villages = [];
-let searchTerm = '';
-let supportNumber = "8090315246"; // Default number
+let currentUser = null;
+let selectedVillageCharge = 0;
+let selectedVillageName = "";
 
-// --- AUTHENTICATION LOGIC ---
-const authModal = document.getElementById('auth-modal');
-const authBtn = document.getElementById('auth-btn');
-const authActionBtn = document.getElementById('auth-action-btn');
-const authSwitch = document.getElementById('auth-switch');
-let isLoginMode = true;
+// Elements
+const productDisplay = document.getElementById('product-display');
+const cartCount = document.getElementById('cart-count');
+const cartSidebar = document.getElementById('cart-sidebar');
+const cartItemsContainer = document.getElementById('cart-items');
+const subtotalEl = document.getElementById('subtotal');
+const deliveryEl = document.getElementById('delivery-charge');
+const totalEl = document.getElementById('total-amount');
+const villageSelect = document.getElementById('cust-village');
+const searchInput = document.getElementById('search-input');
 
+// Initialize App
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
-    const myOrdersBtn = document.getElementById('my-orders-btn');
+    const authBtn = document.getElementById('auth-btn');
     if (user) {
-        authBtn.innerHTML = "🚪"; // Logout Icon
-        myOrdersBtn.style.display = "flex";
+        authBtn.innerHTML = `<i class="fas fa-user-check"></i>`;
+        if (user.email === 'admin@zypso.com') {
+            // Option to go to admin if admin logs in
+            authBtn.onclick = () => window.location.href = 'admin.html';
+        }
     } else {
-        authBtn.innerHTML = "👤"; // Login Icon
-        myOrdersBtn.style.display = "none";
+        authBtn.innerHTML = `<i class="fas fa-user"></i>`;
+        authBtn.onclick = () => document.getElementById('auth-modal').style.display = 'flex';
     }
 });
 
-// Login Button Click Handler
-authBtn.onclick = () => {
-    if (currentUser) {
-        if (confirm("Do you want to logout?")) signOut(auth);
-    } else {
-        authModal.classList.add('active');
-    }
-};
-
-// Switch between Login and Signup
-if(authSwitch) {
-    authSwitch.onclick = () => {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "Login to Zypsomart" : "Create Account";
-        authActionBtn.innerText = isLoginMode ? "Login Now" : "Register Now";
-        authSwitch.innerText = isLoginMode ? "New User? Create an Account" : "Already have an account? Login";
-    };
-}
-
-// Login/Signup Process
-if(authActionBtn) {
-    authActionBtn.onclick = async () => {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-pass').value;
-
-        if(!email || !pass) return alert("Please enter email and password");
-
-        try {
-            if (isLoginMode) {
-                await signInWithEmailAndPassword(auth, email, pass);
-                alert("Login Successful!");
-            } else {
-                await createUserWithEmailAndPassword(auth, email, pass);
-                alert("Account Created Successfully!");
-            }
-            authModal.classList.remove('active');
-        } catch (error) {
-            alert("Error: " + error.message);
-        }
-    };
-}
-
-// --- REAL-TIME DATA LISTENERS ---
-
-// 1. Shop Status & Support Contact
-onSnapshot(doc(db, "shopControl", "status"), (docSnap) => {
-    if(docSnap.exists()) {
-        const d = docSnap.data();
-        globalDeliveryCharge = d.deliveryCharge || 0;
-        supportNumber = d.supportNumber || "8090315246";
-        
-        // Shop Status Overlay
-        const overlay = document.getElementById('shop-closed-overlay');
-        overlay.style.display = d.isClosed ? 'flex' : 'none';
-        
-        // Contact Button Logic
-        const contactBtn = document.getElementById('contact-btn');
-        if(contactBtn) {
-            contactBtn.onclick = () => window.open(`tel:${supportNumber}`);
-        }
-    }
-});
-
-// 2. Banner Listener
-onSnapshot(doc(db, "shopControl", "banner"), (docSnap) => {
-    const bannerContainer = document.getElementById('banner-container');
-    const promoBanner = document.getElementById('promo-banner');
-    if(docSnap.exists()){
-        const b = docSnap.data();
-        if(b.active && b.url) {
-            promoBanner.src = b.url;
-            bannerContainer.style.display = 'block';
-        } else {
-            bannerContainer.style.display = 'none';
-        }
-    }
-});
-
-// 3. Villages Listener (For Delivery)
-onSnapshot(collection(db, "villages"), (snap) => {
-    villages = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const select = document.getElementById('cust-village');
-    select.innerHTML = `<option value="">Choose Village</option>`;
-    villages.forEach(v => {
-        select.innerHTML += `<option value="${v.id}">${v.name} (Charge: ₹${v.charge})</option>`;
+// Load Villages
+onSnapshot(query(collection(db, "villages"), orderBy("name", "asc")), (snapshot) => {
+    villageSelect.innerHTML = '<option value="" data-charge="0">Select Village</option>';
+    snapshot.forEach(doc => {
+        const v = doc.data();
+        const option = document.createElement('option');
+        option.value = v.name;
+        option.dataset.charge = v.deliveryCharge;
+        option.textContent = `${v.name} (₹${v.deliveryCharge})`;
+        villageSelect.appendChild(option);
     });
 });
 
-// 4. Products & Categories
-onSnapshot(collection(db, "categories"), (snap) => {
-    const list = document.getElementById('category-list');
-    list.innerHTML = `<div class="category-item ${currentCategory === 'all' ? 'active' : ''}" onclick="window.filterCat('all')">All</div>`;
-    snap.forEach(doc => {
-        const cat = doc.data();
-        list.innerHTML += `<div class="category-item ${currentCategory === cat.name ? 'active' : ''}" onclick="window.filterCat('${cat.name}')">${cat.name}</div>`;
-    });
+// Village Change Handler
+villageSelect.addEventListener('change', (e) => {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    selectedVillageCharge = parseFloat(selectedOption.dataset.charge) || 0;
+    selectedVillageName = e.target.value;
+    updateCartUI();
 });
 
-onSnapshot(query(collection(db, "products"), orderBy("createdAt", "desc")), (snap) => {
-    allProducts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderProducts();
+// Load Products
+onSnapshot(query(collection(db, "products"), orderBy("createdAt", "desc")), (snapshot) => {
+    allProducts = [];
+    snapshot.forEach(doc => allProducts.push({ id: doc.id, ...doc.data() }));
+    renderProducts(allProducts);
 });
 
-// --- CORE FUNCTIONS ---
-
-window.filterCat = (cat) => {
-    currentCategory = cat;
-    renderProducts();
-    // Update active class in UI
-    document.querySelectorAll('.category-item').forEach(el => {
-        el.classList.toggle('active', el.innerText.toLowerCase() === cat.toLowerCase() || (cat === 'all' && el.innerText === 'All'));
-    });
-};
-
-document.getElementById('product-search').oninput = (e) => {
-    searchTerm = e.target.value.toLowerCase();
-    renderProducts();
-};
-
-function renderProducts() {
-    const grid = document.getElementById('product-grid');
-    grid.innerHTML = '';
-    
-    const filtered = allProducts.filter(p => {
-        const matchesCat = currentCategory === 'all' || p.category === currentCategory;
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm);
-        return matchesCat && matchesSearch;
-    });
-
-    filtered.forEach(p => {
-        const isInCart = cart.find(item => item.id === p.id);
+function renderProducts(products) {
+    productDisplay.innerHTML = '';
+    products.forEach(p => {
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = 'product-card animate-in';
         card.innerHTML = `
-            <img src="${p.imageUrl || 'https://via.placeholder.com/150'}" class="product-img">
-            <div class="product-info">
-                <h3 class="product-name">${p.name}</h3>
-                <p class="product-price">₹${p.price} <small>/ ${p.unit}</small></p>
-                ${p.status === 'Available' 
-                    ? `<button onclick="window.addToCart('${p.id}')" class="btn-primary" style="width:100%">${isInCart ? 'Added ✅' : 'Add to Cart'}</button>`
-                    : `<button class="btn-secondary" style="width:100%" disabled>Out of Stock</button>`}
+            <div class="img-container">
+                <img src="${p.image}" alt="${p.name}">
+            </div>
+            <div class="p-info">
+                <h3>${p.name}</h3>
+                <p class="unit">${p.unit}</p>
+                <div class="price-row">
+                    <span class="price">₹${p.price}</span>
+                    <button onclick="addToCart('${p.id}')" class="add-btn"><i class="fas fa-plus"></i></button>
+                </div>
             </div>
         `;
-        grid.appendChild(card);
+        productDisplay.appendChild(card);
     });
 }
 
-// --- CART LOGIC ---
+// Search Logic
+searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
+    renderProducts(filtered);
+});
 
+// Category Logic
+document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelector('.cat-btn.active').classList.remove('active');
+        btn.classList.add('active');
+        const cat = btn.dataset.category;
+        const filtered = cat === 'All' ? allProducts : allProducts.filter(p => p.category === cat);
+        renderProducts(filtered);
+    });
+});
+
+// Cart Logic
 window.addToCart = (id) => {
-    const product = allProducts.find(p => p.id === id);
+    const prod = allProducts.find(p => p.id === id);
     const existing = cart.find(item => item.id === id);
-    if(existing) {
-        existing.qty++;
+    if (existing) {
+        existing.quantity += 1;
     } else {
-        cart.push({ ...product, qty: 1 });
+        cart.push({ ...prod, quantity: 1 });
     }
     updateCartUI();
-    renderProducts();
 };
 
-window.updateQty = (id, delta) => {
-    const item = cart.find(i => i.id === id);
-    item.qty += delta;
-    if(item.qty < 1) cart = cart.filter(i => i.id !== id);
+window.removeFromCart = (id) => {
+    cart = cart.filter(item => item.id !== id);
     updateCartUI();
-    renderProducts();
 };
 
-window.updateCartUI = () => {
-    const container = document.getElementById('cart-items');
-    const countEl = document.getElementById('cart-count');
-    const totalEl = document.getElementById('cart-total');
+function updateCartUI() {
+    cartCount.innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
+    cartItemsContainer.innerHTML = '';
     
-    container.innerHTML = '';
     let subtotal = 0;
-    
     cart.forEach(item => {
-        subtotal += (item.price * item.qty);
-        container.innerHTML += `
-            <div class="cart-item">
-                <div>
-                    <div style="font-weight:600">${item.name}</div>
-                    <div style="font-size:12px; color:#666">₹${item.price} x ${item.qty}</div>
-                </div>
-                <div class="qty-control">
-                    <button onclick="window.updateQty('${item.id}', -1)">-</button>
-                    <span>${item.qty}</span>
-                    <button onclick="window.updateQty('${item.id}', 1)">+</button>
-                </div>
-            </div>
+        subtotal += item.price * item.quantity;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+            <span>${item.name} (x${item.quantity})</span>
+            <span>₹${item.price * item.quantity}</span>
+            <button onclick="removeFromCart('${item.id}')"><i class="fas fa-trash"></i></button>
         `;
+        cartItemsContainer.appendChild(div);
     });
 
-    const villageId = document.getElementById('cust-village').value;
-    const village = villages.find(v => v.id === villageId);
-    const delivery = village ? village.charge : 0;
-    
-    countEl.innerText = cart.length;
-    totalEl.innerText = `₹${subtotal + delivery}`;
-};
+    subtotalEl.innerText = `₹${subtotal}`;
+    deliveryEl.innerText = `₹${selectedVillageCharge}`;
+    totalEl.innerText = `₹${subtotal + selectedVillageCharge}`;
+}
 
-window.toggleCart = () => {
-    document.getElementById('cart-sidebar').classList.toggle('active');
-};
-
-// --- CHECKOUT / ORDER LOGIC ---
-
-document.getElementById('checkout-btn').onclick = async () => {
-    if(!currentUser) {
-        authModal.classList.add('active');
-        return alert("Please login to place an order");
+// Checkout Logic
+document.getElementById('checkout-btn').addEventListener('click', async () => {
+    if (!currentUser) {
+        alert("Please login to place order");
+        document.getElementById('auth-modal').style.display = 'flex';
+        return;
     }
-    if(cart.length === 0) return alert("Your cart is empty");
+    if (cart.length === 0) return alert("Cart is empty");
+    if (!selectedVillageName) return alert("Please select a village for delivery");
     
-    const name = document.getElementById('cust-name').value;
-    const phone = document.getElementById('cust-phone').value;
-    const villageId = document.getElementById('cust-village').value;
     const address = document.getElementById('cust-address').value;
-
-    if(!name || !phone || !villageId || !address) return alert("Please fill delivery details");
-
-    const village = villages.find(v => v.id === villageId);
-    let subtotal = 0;
-    cart.forEach(i => subtotal += (i.price * i.qty));
-    const total = subtotal + village.charge;
+    if (!address) return alert("Please enter delivery address");
 
     const orderData = {
         userId: currentUser.uid,
-        customerName: name,
-        customerPhone: phone,
-        customerAddress: `${address}, Village: ${village.name}`,
+        customerName: currentUser.email.split('@')[0],
         items: cart,
-        total: total,
+        subtotal: cart.reduce((acc, i) => acc + (i.price * i.quantity), 0),
+        deliveryCharge: selectedVillageCharge,
+        village: selectedVillageName,
+        totalAmount: cart.reduce((acc, i) => acc + (i.price * i.quantity), 0) + selectedVillageCharge,
+        address: address,
         status: 'pending',
         createdAt: serverTimestamp()
     };
 
     try {
         await addDoc(collection(db, "orders"), orderData);
-        
-        // WhatsApp Message Format
-        const itemDetails = cart.map(i => `${i.name} (${i.qty} ${i.unit}) - ₹${i.price * i.qty}`).join('%0A');
-        const msg = `*New Order from ZYPSOMART*%0A%0A*Name:* ${name}%0A*Phone:* ${phone}%0A*Village:* ${village.name}%0A*Address:* ${address}%0A%0A*Items:*%0A${itemDetails}%0A%0A*Delivery:* ₹${village.charge}%0A*Total Amount: ₹${total}*%0A%0A_Please confirm my order!_`;
-        
-        window.open(`https://wa.me/91${supportNumber}?text=${msg}`);
-        
+        alert("Order placed successfully!");
         cart = [];
         updateCartUI();
-        toggleCart();
-        alert("Order Placed Successfully!");
+        cartSidebar.classList.remove('open');
     } catch (e) {
-        alert("Error: " + e.message);
+        alert("Checkout error: " + e.message);
+    }
+});
+
+// UI Interactions
+document.getElementById('cart-toggle').onclick = () => cartSidebar.classList.add('open');
+document.getElementById('close-cart').onclick = () => cartSidebar.classList.remove('open');
+
+// Login Logic
+document.getElementById('login-submit').onclick = async () => {
+    const e = document.getElementById('login-email').value;
+    const p = document.getElementById('login-pass').value;
+    try {
+        await signInWithEmailAndPassword(auth, e, p);
+        document.getElementById('auth-modal').style.display = 'none';
+    } catch (err) {
+        alert("Auth failed: " + err.message);
     }
 };
 
-// Initialize
-window.filterCat('all');
+window.onclick = (event) => {
+    if (event.target == document.getElementById('auth-modal')) {
+        document.getElementById('auth-modal').style.display = "none";
+    }
+};
