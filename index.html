@@ -1,153 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zypsomart</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#16a34a">
+<link rel="manifest" href="/manifest.json">
 
-    <title>Zypsomart</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-    <meta name="theme-color" content="#22c55e">
-    <link rel="manifest" href="/manifest.json">
+<style>
+:root{
+  --primary:#16a34a;
+  --dark:#000000;
+  --light:#ffffff;
+}
 
-    <link rel="stylesheet" href="style.css">
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Inter',sans-serif;
+}
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+body{
+  background:#f8fafc;
+}
+
+/* ================= HEADER ================= */
+
+.app-header{
+  background:linear-gradient(135deg,#000000,#0f172a);
+  padding:18px 0;
+  position:sticky;
+  top:0;
+  z-index:999;
+  box-shadow:0 5px 20px rgba(0,0,0,0.4);
+}
+
+.logo-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* LOGO TEXT ANIMATION */
+
+.brand-wrapper{
+  display:flex;
+  flex-direction:column;
+  animation:fadeSlide 1s ease forwards;
+}
+
+.brand-name{
+  font-size:28px;
+  font-weight:900;
+  background:linear-gradient(90deg,#22c55e,#16a34a,#000000);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:1px;
+}
+
+.tagline{
+  font-size:12px;
+  color:#22c55e;
+  font-weight:600;
+  margin-top:2px;
+  animation:blink 2s infinite;
+}
+
+/* Glow effect */
+.brand-name::after{
+  content:'';
+  position:absolute;
+  width:100%;
+  height:100%;
+  left:0;
+  top:0;
+  filter:blur(15px);
+  opacity:.3;
+}
+
+/* SEARCH */
+#product-search{
+  width:100%;
+  margin-top:15px;
+  padding:12px 20px;
+  border-radius:50px;
+  border:none;
+  outline:none;
+  font-size:14px;
+}
+
+/* CART BUTTON */
+.icon-btn{
+  cursor:pointer;
+  font-size:20px;
+  color:white;
+  position:relative;
+}
+
+#cart-count{
+  position:absolute;
+  top:-8px;
+  right:-10px;
+  background:var(--primary);
+  color:white;
+  font-size:12px;
+  padding:3px 6px;
+  border-radius:50%;
+}
+
+/* Animations */
+@keyframes fadeSlide{
+  from{
+    opacity:0;
+    transform:translateY(-20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+@keyframes blink{
+  0%,100%{opacity:1}
+  50%{opacity:.4}
+}
+
+.container{
+  width:95%;
+  max-width:1200px;
+  margin:auto;
+}
+</style>
 </head>
 
 <body>
 
-    <div id="shop-closed-overlay" style="display:none; position:fixed; inset:0; background:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
-        <h2 style="color:var(--danger)">SHOP CLOSED</h2>
-        <p id="opening-time-text"></p>
-    </div>
+<header class="app-header">
+<div class="container">
 
-    <header class="app-header">
-        <div class="container">
+<div class="logo-row">
 
-            <div class="logo-row">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="logo.png" alt="Zypsomart Logo" id="app-logo">
-                    <span style="font-weight:800; font-size:20px; color:#0f172a;">
-                        Zypso Mart
-                    </span>
-                </div>
+<div class="brand-wrapper">
+  <div class="brand-name">𝐙𝐢𝐩𝐬𝐨</div>
+  <div class="tagline">Delivery in minutes...</div>
+</div>
 
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <a id="support-link" href="tel:8090315246" class="icon-btn" style="text-decoration:none;">📞</a>
-                    <button id="my-orders-btn" class="icon-btn" style="display:none;">📦</button>
-                    <div id="auth-btn" class="icon-btn">👤</div>
-                    <div id="cart-btn" class="icon-btn">
-                        🛒<span id="cart-count">0</span>
-                    </div>
-                </div>
-            </div>
+<div style="display:flex; gap:15px; align-items:center;">
+  <div id="auth-btn" class="icon-btn">👤</div>
+  <div id="cart-btn" class="icon-btn">
+    🛒<span id="cart-count">0</span>
+  </div>
+</div>
 
-            <input type="text" id="product-search" placeholder="Search products...">
+</div>
 
-            <div id="category-list" class="category-scroll"></div>
-        </div>
-    </header>
+<input type="text" id="product-search" placeholder="Search products...">
 
-    <main class="container">
-        <div id="product-grid" class="product-grid"></div>
-    </main>
+</div>
+</header>
 
-    <div id="admin-pin-modal" class="modal">
-        <div class="modal-content">
-            <h3>Admin Access</h3>
-            <input type="password" id="admin-pin-input" placeholder="Enter Admin PIN">
-            <button onclick="checkAdminPin()" class="btn-primary" style="width:100%;">Verify & Enter</button>
-            <button onclick="closeAdminPin()" class="close-btn">&times;</button>
-        </div>
-    </div>
+<main class="container" style="padding:40px 0;">
+<h2>Welcome to zipso 🚀</h2>
+</main>
 
-    <div id="sidebar-overlay" class="sidebar-overlay">
-        <div class="container" style="padding-top:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0;">Your Cart</h2>
-                <button id="close-cart" class="icon-btn">✕</button>
-            </div>
-
-            <div id="cart-items"></div>
-
-            <div id="delivery-details" style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                <h4>Delivery Details</h4>
-                <input type="text" id="cust-name" placeholder="Full Name" class="capsule-input">
-                <input type="tel" id="cust-phone" placeholder="Phone Number" class="capsule-input">
-                
-                <select id="cust-village" class="capsule-input" style="appearance: auto;">
-                    <option value="">Select Village / Area</option>
-                </select>
-
-                <textarea id="cust-address" placeholder="Delivery Address" class="capsule-input" style="border-radius:20px; min-height:80px;"></textarea>
-            </div>
-
-            <div class="cart-summary">
-                <div style="display:flex; justify-content:space-between; font-size:22px; font-weight:800; border-top:2px solid #eee; padding-top:15px; margin-top:10px;">
-                    <span>Total:</span>
-                    <span id="cart-total">₹0</span>
-                </div>
-                <button id="checkout-btn" class="btn-primary" style="margin-top:15px; width:100%; border-radius:50px; height:50px;">
-                    Confirm Order
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="orders-modal" class="modal">
-        <div class="modal-content" style="max-width:500px; width:95%;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>Order History</h3>
-                <button id="close-orders" class="close-btn">&times;</button>
-            </div>
-            <div id="user-orders-list" style="max-height:60vh; overflow-y:auto;"></div>
-        </div>
-    </div>
-
-    <div id="auth-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title">Login</h3>
-            <form id="auth-form">
-                <input type="email" id="auth-email" placeholder="Email" required class="capsule-input" style="border-radius:10px;">
-                <input type="password" id="auth-password" placeholder="Password" required class="capsule-input" style="border-radius:10px;">
-                <button type="submit" id="auth-submit" class="btn-primary" style="width:100%;">Continue</button>
-
-                <div style="display:flex; justify-content:space-between; margin-top:15px;">
-                    <p id="switch-mode" style="cursor:pointer; color:var(--primary); font-size:13px;">New here? Register</p>
-                    <p onclick="openAdminPin()" style="cursor:pointer; color:#64748b; font-size:13px; font-weight:600;">🛠 Admin</p>
-                </div>
-            </form>
-            <button id="close-modal" class="close-btn">&times;</button>
-        </div>
-    </div>
-
-    <script type="module" src="app.js"></script>
-
-    <script>
-        window.openAdminPin = () => {
-            document.getElementById('auth-modal').classList.remove('active');
-            document.getElementById('admin-pin-modal').classList.add('active');
-        };
-        window.closeAdminPin = () => {
-            document.getElementById('admin-pin-modal').classList.remove('active');
-        };
-        window.checkAdminPin = () => {
-            const pin = document.getElementById('admin-pin-input').value;
-            if (pin === "0000") window.location.href = "admin.html";
-            else alert("Incorrect Admin PIN");
-        };
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service Worker Registered', reg))
-                    .catch(err => console.log('Service Worker Error', err));
-            });
-        }
-    </script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
