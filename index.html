@@ -3,36 +3,28 @@
 <head>
     <meta charset="UTF-8">
 
-    <!-- Responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Title -->
     <title>Zypsomart</title>
 
-    <!-- PWA META -->
     <meta name="theme-color" content="#22c55e">
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-    <!-- SHOP CLOSED OVERLAY -->
     <div id="shop-closed-overlay" style="display:none; position:fixed; inset:0; background:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
         <h2 style="color:var(--danger)">SHOP CLOSED</h2>
         <p id="opening-time-text"></p>
     </div>
 
-    <!-- HEADER -->
     <header class="app-header">
         <div class="container">
 
-            <!-- LOGO + APP NAME -->
             <div class="logo-row">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="logo.png" alt="Zypsomart Logo" id="app-logo">
@@ -51,20 +43,16 @@
                 </div>
             </div>
 
-            <!-- SEARCH -->
             <input type="text" id="product-search" placeholder="Search products...">
 
-            <!-- CATEGORIES -->
             <div id="category-list" class="category-scroll"></div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <main class="container">
         <div id="product-grid" class="product-grid"></div>
     </main>
 
-    <!-- ADMIN PIN MODAL -->
     <div id="admin-pin-modal" class="modal">
         <div class="modal-content">
             <h3>Admin Access</h3>
@@ -74,7 +62,6 @@
         </div>
     </div>
 
-    <!-- CART SIDEBAR -->
     <div id="sidebar-overlay" class="sidebar-overlay">
         <div class="container" style="padding-top:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -88,6 +75,11 @@
                 <h4>Delivery Details</h4>
                 <input type="text" id="cust-name" placeholder="Full Name" class="capsule-input">
                 <input type="tel" id="cust-phone" placeholder="Phone Number" class="capsule-input">
+                
+                <select id="cust-village" class="capsule-input" style="appearance: auto;">
+                    <option value="">Select Village / Area</option>
+                </select>
+
                 <textarea id="cust-address" placeholder="Delivery Address" class="capsule-input" style="border-radius:20px; min-height:80px;"></textarea>
             </div>
 
@@ -103,7 +95,6 @@
         </div>
     </div>
 
-    <!-- ORDERS MODAL -->
     <div id="orders-modal" class="modal">
         <div class="modal-content" style="max-width:500px; width:95%;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -114,7 +105,6 @@
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">Login</h3>
@@ -132,10 +122,8 @@
         </div>
     </div>
 
-    <!-- MAIN APP SCRIPT -->
     <script type="module" src="app.js"></script>
 
-    <!-- ADMIN HELPERS -->
     <script>
         window.openAdminPin = () => {
             document.getElementById('auth-modal').classList.remove('active');
@@ -151,7 +139,6 @@
         };
     </script>
 
-    <!-- ✅ SERVICE WORKER REGISTER (PWA KEY PART) -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

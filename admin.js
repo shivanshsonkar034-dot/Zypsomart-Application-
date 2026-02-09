@@ -47,9 +47,19 @@ window.initAdmin = () => {
         const cats = snap.docs.map(d => ({id: d.id, ...d.data()}));
         document.getElementById('p-category').innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
         document.getElementById('admin-cat-list').innerHTML = cats.map(c => `
-            <span class="category-chip" style="background:#e2e8f0; border:none; display:flex; align-items:center; gap:8px;">
+            <span class="category-chip" style="background:#e2e8f0; border:none; display:flex; align-items:center; gap:8px; padding: 5px 10px; border-radius: 20px; font-size: 12px;">
                 ${c.name} <b onclick="deleteCategory('${c.id}')" style="cursor:pointer; color:red">×</b>
             </span>`).join('');
+    });
+
+    // 5. Villages Real-time Listener
+    onSnapshot(collection(db, "villages"), (snap) => {
+        const villages = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        document.getElementById('admin-village-list').innerHTML = villages.map(v => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px; margin-bottom:5px; border-radius:8px; font-size:12px; border: 1px solid #ddd;">
+                <span><b>${v.name}</b> (₹${v.deliveryCharge})</span>
+                <b onclick="deleteVillage('${v.id}')" style="cursor:pointer; color:red; padding:0 5px;">×</b>
+            </div>`).join('');
     });
 };
 
@@ -85,6 +95,7 @@ function renderOrders() {
         const cname = o.customerName || "Unknown";
         const cphone = o.customerPhone || "No Phone";
         const caddress = o.customerAddress || "No Address";
+        const cvillage = o.villageName ? `<br><small>Village: ${o.villageName}</small>` : "";
 
         // Product + Quantity list
         const itemsList = (o.items && o.items.length > 0)
@@ -100,7 +111,8 @@ function renderOrders() {
                 <td>
                     <b>${cname}</b><br>
                     <small>${cphone}</small><br>
-                    <small>${caddress}</small><br>
+                    <small>${caddress}</small>
+                    ${cvillage}<br>
                     <small style="color:#2563eb">${itemsList}</small>
                 </td>
                 <td>₹${o.total || 0}</td>
@@ -182,4 +194,21 @@ window.deleteProduct = async (id) => {
 
 window.deleteCategory = async (id) => { 
     if(confirm("Delete Category?")) await deleteDoc(doc(db, "categories", id)); 
+};
+
+// Village Functions
+window.addVillage = async () => {
+    const name = document.getElementById('v-name').value;
+    const charge = parseInt(document.getElementById('v-charge').value);
+    if(name && !isNaN(charge)) {
+        await addDoc(collection(db, "villages"), { name, deliveryCharge: charge });
+        document.getElementById('v-name').value = '';
+        document.getElementById('v-charge').value = '';
+    } else {
+        alert("Please enter village name and delivery charge");
+    }
+};
+
+window.deleteVillage = async (id) => {
+    if(confirm("Delete this village?")) await deleteDoc(doc(db, "villages", id));
 };
